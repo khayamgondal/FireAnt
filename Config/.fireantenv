@@ -1,0 +1,6 @@
+[directory]
+path = /home/ke/Documents/Projects/Fireant/Code/
+
+[mysql]
+root_username = root
+root_password = root
