@@ -16,6 +16,9 @@ DEBUG_SCRIPT = '[OpenStackResourceAssignment]'
 DEBUG_HEADER = DEBUG_MODULE + DEBUG_SCRIPT
 
 def OpenStackResourceAssignment(message_content_json):
+    config = ConfigParser.ConfigParser()
+    config.read('/etc/nova/fireant.conf')
+
     req_data = {}
     req_data['request'] = message_content_json['request']['resources'][0]['properties']
     print DEBUG_HEADER, "Assigning resources for the request..."
@@ -25,7 +28,9 @@ def OpenStackResourceAssignment(message_content_json):
     table =  message_content_json['netinfo']
     for tab in table:
         tab = int(tab)
-        entry = entry+ req_data['request']['host_ip']+"_"+table.values()[tab]['ip']+"_"+table.values()[tab]['mac']+'_'+table.values()[tab]['vlan']+"\n"
+        local_ip=config.get('Local','ip')
+        if table.values()[tab]['cluster'] != local_ip: #Dont add local flows into tables
+           entry = entry+ req_data['request']['host_ip']+"_"+table.values()[tab]['ip']+"_"+table.values()[tab]['mac']+'_'+table.values()[tab]['vlan']+"\n"
     smi.write(entry)
     smi.close()
     print DEBUG_HEADER, "Setting vlan/vxlan tags..."
@@ -40,9 +45,6 @@ def OpenStackResourceAssignment(message_content_json):
     f = open(vmdata_file_path,'w')
     f.write(ipcmd)
     f.close() 
-
-    config = ConfigParser.ConfigParser()
-    config.read('/etc/nova/fireant.conf')
 
     user=config.get('creds', 'user')
     passwd=config.get('creds', 'pass')

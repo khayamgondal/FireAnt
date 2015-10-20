@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys, subprocess, time, os, datetime, signal, json
 from pprint import pprint
-
+import urllib2
 import ConfigParser
 #----------------------------------
 # Fireant working environment setup
@@ -10,13 +10,21 @@ config = ConfigParser.ConfigParser()
 config.read('/etc/nova/fireant.conf')
 folder_path = config.get('directory','path')
 
-
-time.sleep(7)
+#Also invoke this script on requesting cluster
+try:
+  fo = open(folder_path+'maciptable','r')
+  for line in fo:
+    parts = line.split('_')
+    ip = parts[0]
+    urllib2.urlopen('http://'+ip+'/html/startflows')
+except:
+ print 'maciptable doesnot exist'
+time.sleep(7) #Waiting to make sure that VM is up and port is created
 import MySQLdb
-dip=config.get('Local', 'ip') # returns 12.2
-dbase=config.get('sql', 'db') # returns 12.2
-duser=config.get('sql', 'user') # returns 12.2
-dpass=config.get('sql', 'pass') # returns 12.2
+dip=config.get('Local', 'ip')
+dbase=config.get('sql', 'db') 
+duser=config.get('sql', 'user') 
+dpass=config.get('sql', 'pass') 
 db = MySQLdb.connect(host=dip, # your host, usually localhost
                      user=duser, # your username
                      passwd=dpass, # your password
@@ -95,6 +103,12 @@ table = table0 + table1
 f = open(folder_path+'vxlanflows.txt','w')
 f.write(table)
 f.close()
+
+#Remove ipmactables
+try:
+ os.remove(folder_path+'maciptable')
+except:
+ print 'Already removed maciptabl/Doesnot exist'
 os.popen("ovs-ofctl del-flows br-ant")
 os.popen("ovs-ofctl add-flows br-ant  "+folder_path+"/vxlanflows.txt")
 

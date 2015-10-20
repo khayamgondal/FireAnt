@@ -2,7 +2,7 @@
  # -*- coding: utf-8 -*-
 import memcache,json,subprocess,time,uuid,os
 import ConfigParser,MySQLdb
-
+#Khayam lanuched in pycharm 
 #----------------------------------
 # Fireant working environment setup
 #----------------------------------
@@ -66,12 +66,15 @@ db = MySQLdb.connect(host=dip,
 
 cur = db.cursor()
 netinfo = {}
-cur.execute("select mac,ip,vlan from vms where cluster='CB_"+dip+"'")
+cur.execute("select mac,ip,vlan,cluster from vms where cluster='CB_"+dip+"'")
 for idx, row in enumerate(cur.fetchall()):
      current = {}    
      current['mac']=row[0]
      current['ip']=row[1]
      current['vlan']=row[2]
+     cluster_name = row[3]
+     cluster_ip = cluster_name.split('_')
+     current['cluster'] = cluster_ip[1]
      netinfo[idx]=current
 request['netinfo']=netinfo
 # Ke: add uuid into the request json 09/14/2015
