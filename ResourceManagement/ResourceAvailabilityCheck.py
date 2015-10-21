@@ -44,7 +44,7 @@ def ResourceAvailabilityCheck(message_content_json):
     ten_id = out[2:34]
     print ten_id
 
-    nova = client.Client(2,'admin',admin_user,admin_pass,keystone)
+    nova = client.Client(2,admin_user,admin_pass,'admin',keystone)
     limits = nova.limits.get(reserved=True, tenant_id=ten_id).absolute
     columns = ['Name', 'Value']
     res = print_list(limits, columns)
